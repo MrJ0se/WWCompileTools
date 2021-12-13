@@ -1,0 +1,73 @@
+import {FileError, createDir} from './t_utils';
+import path from 'path';
+import ts from 'typescript';
+
+
+export const OPTIONS_NODE = {
+	"target": ts.ScriptTarget.ES2015,
+	"module": ts.ModuleKind.CommonJS,
+	"strict": true,
+	"moduleResolution": ts.ModuleResolutionKind.NodeJs,
+	"esModuleInterop": true,
+	"skipLibCheck": true,
+	"forceConsistentCasingInFileNames": true,
+    "outDir": "./bin",
+    "rootDir": "./src",
+};
+export const OPTIONS_WEB = {
+	"target": ts.ScriptTarget.ES5,
+	"module": ts.ModuleKind.CommonJS,
+	"strict": true,
+	"esModuleInterop": true,
+	"skipLibCheck": true,
+	"forceConsistentCasingInFileNames": true
+};
+export const OPTIONS_WEB_AMD = {
+	"target": ts.ScriptTarget.ES5,
+	"module": ts.ModuleKind.AMD,
+	"strict": true,
+	"moduleResolution": ts.ModuleResolutionKind.Classic,
+	"esModuleInterop": true,
+	"skipLibCheck": true,
+	"forceConsistentCasingInFileNames": true
+};
+
+
+const formatHost: ts.FormatDiagnosticsHost = {
+  getCanonicalFileName: path => path,
+  getCurrentDirectory: ts.sys.getCurrentDirectory,
+  getNewLine: () => ts.sys.newLine
+};
+
+export function watchMain():ts.WatchOfConfigFile<ts.SemanticDiagnosticsBuilderProgram> {
+  const createProgram = ts.createSemanticDiagnosticsBuilderProgram;
+  const host = ts.createWatchCompilerHost(
+    path.resolve(__dirname, "../tsconfig.json"),
+    OPTIONS_WEB_AMD,
+    ts.sys,
+    createProgram,
+    reportDiagnostic,
+    ()=>{}
+  );
+
+  const origPostProgramCreate = host.afterProgramCreate;
+  host.afterProgramCreate = program => {
+    console.log("** We finished making the program! **");
+    origPostProgramCreate!(program);
+  };
+
+  return ts.createWatchProgram(host);
+}
+
+function reportDiagnostic(diagnostic: ts.Diagnostic) {
+	var src = (diagnostic.file as ts.SourceFile);
+	var cstart = diagnostic.start as number;
+	var colum = 0;
+	var cpos = 0;
+	while (cpos >=0&&cpos < cstart) {
+		//
+		cpos = (src.text as string).indexOf('\n', cpos+1);
+		colum++;
+	}
+  console.error("Error", diagnostic.code, ` ${src.fileName} ${colum}:`, ts.flattenDiagnosticMessageText( diagnostic.messageText, formatHost.getNewLine()));
+}
