@@ -3,7 +3,7 @@ watcher to compile EJS, Pug, Sass, Scss, Less and convert PNG/JPG to webp.
 ## How to use
 - install package dependencies (npm install) and run typescript compilation (tsc).
 - create a batch "node [path to]/bin/cli.js %*" and add to patch (on windows) or create a alias "alias wwt='node [path to]/bin/cli.js'" (on linux/mac).
-- execute: "wwt <origin path> <dest path>"
+- execute: "wwt \<origin path\> \<dest path\>"
 ## effects
 - the .ts files is ignored.
 - the compatible files, with ".t" before extension is compiled converted:
